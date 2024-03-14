@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket.IO CRUD</title>
+</head>
+<body>
+  <h1>Socket.IO CRUD</h1>
+
+  <input type="text" id="itemInput">
+  <button onclick="addItem()">Add Item</button>
+
+  <ul id="itemList"></ul>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    // Initial data
+    socket.on('initialData', (items) => {
+      const itemList = document.getElementById('itemList');
+      items.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item.name;
+        itemList.appendChild(li);
+      });
+    });
+
+    // Add item
+    function addItem() {
+      const itemName = document.getElementById('itemInput').value;
+      socket.emit('addItem', itemName);
+    }
+
+    // Handle item added event
+    socket.on('itemAdded', (item) => {
+      const itemList = document.getElementById('itemList');
+      const li = document.createElement('li');
+      li.textContent = item.name;
+      itemList.appendChild(li);
+    });
+
+    // Handle item deleted event
+    socket.on('itemDeleted', (itemId) => {
+      const itemList = document.getElementById('itemList');
+      const liToRemove = itemList.querySelector(`[data-id="${itemId}"]`);
+      if (liToRemove) {
+        itemList.removeChild(liToRemove);
+      }
+    });
+
+    // Handle item updated event
+    socket.on('itemUpdated', (updatedItem) => {
+      const itemList = document.getElementById('itemList');
+      const liToUpdate = itemList.querySelector(`[data-id="${updatedItem._id}"]`);
+      if (liToUpdate) {
+        liToUpdate.textContent = updatedItem.name;
+      }
+    });
+  </script>
+</body>
+</html>
